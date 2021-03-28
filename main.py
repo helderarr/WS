@@ -1,8 +1,9 @@
 import blink.main_dense as main_dense
 import argparse
 
-models_path = "models/" # the path where you stored the BLINK models
+models_path = "/home/azureuser/test/BLINK/models/" # the path where you stored the BLINK models
 
+print(models_path)
 config = {
     "test_entities": None,
     "test_mentions": None,
@@ -42,4 +43,7 @@ data_to_link = [ {
 
 _, _, _, _, _, predictions, scores, = main_dense.run(args, None, *models, test_data=data_to_link)
 
-print ("hello")
+
+
+print (predictions)
+print(scores)
