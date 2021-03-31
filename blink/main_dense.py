@@ -28,7 +28,6 @@ from blink.crossencoder.train_cross import modify, evaluate
 from blink.crossencoder.data_process import prepare_crossencoder_data
 from blink.indexer.faiss_indexer import DenseFlatIndexer, DenseHNSWFlatIndexer
 
-
 HIGHLIGHTS = [
     "on_red",
     "on_green",
@@ -43,19 +42,19 @@ def _print_colorful_text(input_sentence, samples):
     init()  # colorful output
     msg = ""
     if samples and (len(samples) > 0):
-        msg += input_sentence[0 : int(samples[0]["start_pos"])]
+        msg += input_sentence[0: int(samples[0]["start_pos"])]
         for idx, sample in enumerate(samples):
             msg += colored(
-                input_sentence[int(sample["start_pos"]) : int(sample["end_pos"])],
+                input_sentence[int(sample["start_pos"]): int(sample["end_pos"])],
                 "grey",
                 HIGHLIGHTS[idx % len(HIGHLIGHTS)],
             )
             if idx < len(samples) - 1:
                 msg += input_sentence[
-                    int(sample["end_pos"]) : int(samples[idx + 1]["start_pos"])
-                ]
+                       int(sample["end_pos"]): int(samples[idx + 1]["start_pos"])
+                       ]
             else:
-                msg += input_sentence[int(sample["end_pos"]) :]
+                msg += input_sentence[int(sample["end_pos"]):]
     else:
         msg = input_sentence
         print("Failed to identify entity from text:")
@@ -63,7 +62,7 @@ def _print_colorful_text(input_sentence, samples):
 
 
 def _print_colorful_prediction(
-    idx, sample, e_id, e_title, e_text, e_url, show_url=False
+        idx, sample, e_id, e_title, e_text, e_url, show_url=False
 ):
     print(colored(sample["mention"], "grey", HIGHLIGHTS[idx % len(HIGHLIGHTS)]))
     to_print = "id:{}\ntitle:{}\ntext:{}\n".format(e_id, e_title, e_text[:256])
@@ -83,11 +82,11 @@ def _annotate(ner_model, input_sentences):
         record["label_id"] = -1
         # LOWERCASE EVERYTHING !
         record["context_left"] = sentences[mention["sent_idx"]][
-            : mention["start_pos"]
-        ].lower()
+                                 : mention["start_pos"]
+                                 ].lower()
         record["context_right"] = sentences[mention["sent_idx"]][
-            mention["end_pos"] :
-        ].lower()
+                                  mention["end_pos"]:
+                                  ].lower()
         record["mention"] = mention["text"].lower()
         record["start_pos"] = int(mention["start_pos"])
         record["end_pos"] = int(mention["end_pos"])
@@ -97,7 +96,7 @@ def _annotate(ner_model, input_sentences):
 
 
 def _load_candidates(
-    entity_catalogue, entity_encoding, faiss_index=None, index_path=None, logger=None
+        entity_catalogue, entity_encoding, faiss_index=None, index_path=None, logger=None
 ):
     # only load candidate encoding if not using faiss index
     if faiss_index is None:
@@ -208,7 +207,7 @@ def __load_test(test_filename, kb2id, wikipedia_id2local_id, logger):
 
 
 def _get_test_samples(
-    test_filename, test_entities_path, title2id, wikipedia_id2local_id, logger
+        test_filename, test_entities_path, title2id, wikipedia_id2local_id, logger
 ):
     kb2id = None
     if test_entities_path:
@@ -287,7 +286,6 @@ def _run_crossencoder(crossencoder, dataloader, logger, context_len, device="cud
 
 
 def load_models(args, logger=None):
-
     # load biencoder model
     if logger:
         logger.info("loading biencoder model")
@@ -318,10 +316,10 @@ def load_models(args, logger=None):
         wikipedia_id2local_id,
         faiss_indexer,
     ) = _load_candidates(
-        args.entity_catalogue, 
-        args.entity_encoding, 
-        faiss_index=getattr(args, 'faiss_index', None), 
-        index_path=getattr(args, 'index_path' , None),
+        args.entity_catalogue,
+        args.entity_encoding,
+        faiss_index=getattr(args, 'faiss_index', None),
+        index_path=getattr(args, 'index_path', None),
         logger=logger,
     )
 
@@ -340,21 +338,20 @@ def load_models(args, logger=None):
 
 
 def run(
-    args,
-    logger,
-    biencoder,
-    biencoder_params,
-    crossencoder,
-    crossencoder_params,
-    candidate_encoding,
-    title2id,
-    id2title,
-    id2text,
-    wikipedia_id2local_id,
-    faiss_indexer=None,
-    test_data=None,
+        args,
+        logger,
+        biencoder,
+        biencoder_params,
+        crossencoder,
+        crossencoder_params,
+        candidate_encoding,
+        title2id,
+        id2title,
+        id2text,
+        wikipedia_id2local_id,
+        faiss_indexer=None,
+        test_data=None,
 ):
-
     if not test_data and not args.test_mentions and not args.interactive:
         msg = (
             "ERROR: either you start BLINK with the "
@@ -382,10 +379,14 @@ def run(
             ner_model = NER.get_model()
 
             # Interactive
-            text = input("insert text:")
+            # text = input("insert text:")
 
+            text = "Cristiano Ronaldo dos Santos Aveiro is a Portuguese professional footballer who plays as " \
+                   "a forward for Serie A club Juventus and captains the Portugal national team "
             # Identify mentions
             samples = _annotate(ner_model, [text])
+
+            print(samples)
 
             _print_colorful_text(text, samples)
 
@@ -409,9 +410,9 @@ def run(
 
         # don't look at labels
         keep_all = (
-            args.interactive
-            or samples[0]["label"] == "unknown"
-            or samples[0]["label_id"] < 0
+                args.interactive
+                or samples[0]["label"] == "unknown"
+                or samples[0]["label_id"] < 0
         )
 
         # prepare the data for biencoder
@@ -541,7 +542,7 @@ def run(
             scores = []
             predictions = []
             for entity_list, index_list, scores_list in zip(
-                nns, index_array, unsorted_scores
+                    nns, index_array, unsorted_scores
             ):
 
                 index_list = index_list.tolist()
@@ -570,7 +571,7 @@ def run(
 
                 if len(samples) > 0:
                     overall_unormalized_accuracy = (
-                        crossencoder_normalized_accuracy * len(label_input) / len(samples)
+                            crossencoder_normalized_accuracy * len(label_input) / len(samples)
                     )
                 print(
                     "overall unnormalized accuracy: %.4f" % overall_unormalized_accuracy
@@ -606,14 +607,14 @@ if __name__ == "__main__":
         "--biencoder_model",
         dest="biencoder_model",
         type=str,
-        default="models/biencoder_wiki_large.bin",
+        default="/home/azureuser/test/BLINK/models/biencoder_wiki_large.bin",
         help="Path to the biencoder model.",
     )
     parser.add_argument(
         "--biencoder_config",
         dest="biencoder_config",
         type=str,
-        default="models/biencoder_wiki_large.json",
+        default="/home/azureuser/test/BLINK/models/biencoder_wiki_large.json",
         help="Path to the biencoder configuration.",
     )
     parser.add_argument(
@@ -621,7 +622,7 @@ if __name__ == "__main__":
         dest="entity_catalogue",
         type=str,
         # default="models/tac_entity.jsonl",  # TAC-KBP
-        default="models/entity.jsonl",  # ALL WIKIPEDIA!
+        default="/home/azureuser/test/BLINK/models/entity.jsonl",  # ALL WIKIPEDIA!
         help="Path to the entity catalogue.",
     )
     parser.add_argument(
@@ -629,7 +630,7 @@ if __name__ == "__main__":
         dest="entity_encoding",
         type=str,
         # default="models/tac_candidate_encode_large.t7",  # TAC-KBP
-        default="models/all_entities_large.t7",  # ALL WIKIPEDIA!
+        default="/home/azureuser/test/BLINK/models/all_entities_large.t7",  # ALL WIKIPEDIA!
         help="Path to the entity catalogue.",
     )
 
@@ -638,14 +639,14 @@ if __name__ == "__main__":
         "--crossencoder_model",
         dest="crossencoder_model",
         type=str,
-        default="models/crossencoder_wiki_large.bin",
+        default="/home/azureuser/test/BLINK/models/crossencoder_wiki_large.bin",
         help="Path to the crossencoder model.",
     )
     parser.add_argument(
         "--crossencoder_config",
         dest="crossencoder_config",
         type=str,
-        default="models/crossencoder_wiki_large.json",
+        default="/home/azureuser/test/BLINK/models/crossencoder_wiki_large.json",
         help="Path to the crossencoder configuration.",
     )
 
