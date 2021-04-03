@@ -1,4 +1,4 @@
-from BlinkReader import BlinkReader
+from tests.BlinkReader import BlinkReader
 from PassageReader import PassageReader
 
 passage_reader = PassageReader()

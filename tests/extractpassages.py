@@ -3,7 +3,7 @@ import pandas as pd
 
 retriever = PassageRetriever()
 
-df = pd.read_csv('data/anserini_test_lmd_1000_car_marco_wapo_2019_bert_1000_CORIG.run',
+df = pd.read_csv('../data/anserini_test_lmd_1000_car_marco_wapo_2019_bert_1000_CORIG.run',
                  names=["conversation_utterance_id", "NA", "passage_id", "gobal_rank", "score", "dataset"],
                  header=None, delimiter=" ")
 

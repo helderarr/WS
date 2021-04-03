@@ -1,21 +1,21 @@
+
+
 from ElasticSearchSimpleAPI import ESSimpleAPI
 from RetrieverCache import RetrieverCache
 
 
 class PassageRetriever(RetrieverCache):
 
-    def __init__(self):
-        super(PassageRetriever, self).__init__(filename="data/db.pickle")
-        self.es = ESSimpleAPI()
-
-    def get_passage(self, doc_id):
-        if self.contains_key(doc_id):
-            return self.get_element(doc_id)
-
+    def extract_element_from_source(self, key):
         try:
-            passage = self.es.get_doc_body(doc_id)
-            self.auto_save(doc_id, passage)
+            passage = self.es.get_doc_body(key)
             return passage
         except Exception as e:
             print(e)
             return None
+
+    def __init__(self):
+        super(PassageRetriever, self).__init__(filename="data/db.pickle")
+        self.es = ESSimpleAPI()
+
+

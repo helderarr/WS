@@ -1,18 +1,24 @@
 import pandas as pd
 
+from BlinkAnnotator import BlinkAnnotator
+from BlinkEntityExtractor import BlinkEntityExtractor
 from DbPediaSpotlightEntityExtractor import DbPediaSpotlightEntityExtractor
 from PassageReader import PassageReader
 from interfaces import Pipeline
 
 
-pipeline = Pipeline()
-pipeline.add_step(DbPediaSpotlightEntityExtractor())
-#pipeline.add_step(PageRankPassageRanker())
-#pipeline.add_step(TopNPassageSelector())
-#pipeline.add_step(BartPassageSumarizer())
 
 passage_reader = PassageReader()
 
-pipeline.set_input(passage_reader.get_utterance_passages("31_1"))
-pipeline.run()
-print(pipeline.get_output())
+pipeline1 = Pipeline()
+pipeline1.add_step(DbPediaSpotlightEntityExtractor())
+out1 = pipeline1.run(passage_reader.get_utterance_passages("32_1"))
+print(out1)
+
+pipeline2 = Pipeline()
+pipeline2.add_step(BlinkAnnotator())
+pipeline2.add_step(BlinkEntityExtractor())
+out2 = pipeline2.run(passage_reader.get_utterance_passages("32_1"))
+print(out2)
+
+
