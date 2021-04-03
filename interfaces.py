@@ -1,21 +1,21 @@
 import abc
-from dataclasses import dataclass
+from abc import ABC
 
-from numpy import iterable
+from pandas import DataFrame
 
 
-class PipelineStep(abc):
+class PipelineStep(ABC):
 
     @abc.abstractmethod
     def run(self):
         pass
 
     @abc.abstractmethod
-    def get_output(self) -> iterable:
+    def get_output(self) -> DataFrame:
         pass
 
     @abc.abstractmethod
-    def set_input(self, data: iterable):
+    def set_input(self, data: DataFrame):
         pass
 
 
@@ -27,8 +27,11 @@ class InitStep(PipelineStep):
     def set_input(self, data):
         self.data = data
 
+    def run(self):
+        pass
 
-class PipelineData(abc):
+
+class PipelineData(ABC):
     def __init__(self, data):
         self.data = data
 
@@ -37,50 +40,46 @@ class PassagesList():
     pass
 
 
-class EntityExtractor(PipelineStep):
-
-    def run(self):
-        pass
+class EntityExtractor(PipelineStep, ABC):
+    pass
 
 
 class PassageRanker(PipelineStep):
 
-    def __init__(self, passages: list[str]):
+    def __init__(self, passages: DataFrame):
         self.passages = passages
 
     def run(self):
         pass
 
-    def get_output(self) -> list[(str, list[int])]:
+    def get_output(self) -> DataFrame:
         pass
 
 
 class PassageSelector(PipelineStep):
 
-    def __init__(self, passages: list[str]):
+    def __init__(self, passages: DataFrame):
         self.passages = passages
 
     def run(self):
         pass
 
-    def get_output(self) -> list[(str, list[int])]:
+    def get_output(self) -> DataFrame:
         pass
 
 
 class PassageSummarizer(PipelineStep):
 
-    def __init__(self, passages: list[str]):
+    def __init__(self, passages: DataFrame):
         self.passages = passages
 
     def run(self):
         pass
 
-    def get_output(self) -> list[(str, list[int])]:
+    def get_output(self) -> DataFrame:
         pass
 
 
-class BlinkEntityExtractor(EntityExtractor):
-    pass
 
 
 class PageRankPassageRanker(PassageRanker):
@@ -96,7 +95,7 @@ class BartPassageSumarizer(PassageSummarizer):
 
 
 class Pipeline(PipelineStep):
-    steps: list[PipelineStep] = []
+    steps: DataFrame = []
 
     def __init__(self):
         self.in_data = None
@@ -123,10 +122,3 @@ class Pipeline(PipelineStep):
         return self.out_data
 
 
-pipeline = Pipeline()
-pipeline.add_step(BlinkEntityExtractor())
-pipeline.add_step(PageRankPassageRanker())
-pipeline.add_step(TopNPassageSelector())
-pipeline.add_step(BartPassageSumarizer())
-
-pipeline.in_data()

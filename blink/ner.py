@@ -11,6 +11,9 @@ from flair.data import Sentence
 def get_model(parameters=None):
     return Flair(parameters)
 
+def get_model_hunflair(parameters=None):
+    return Hunflair(parameters)
+
 
 class NER_model:
     def __init__(self, parameters=None):
@@ -41,3 +44,18 @@ class Flair(NER_model):
             mentions.extend(sent_mentions)
         return {"sentences": sentences, "mentions": mentions}
 
+
+class Hunflair(NER_model):
+    def __init__(self, parameters=None):
+        self.model = SequenceTagger.load("hunflair")
+
+    def predict(self, sentences):
+        mentions = []
+        for sent_idx, sent in enumerate(sentences):
+            sent = Sentence(sent, use_tokenizer=True)
+            self.model.predict(sent)
+            sent_mentions = sent.to_dict(tag_type="ner")["entities"]
+            for mention in sent_mentions:
+                mention["sent_idx"] = sent_idx
+            mentions.extend(sent_mentions)
+        return {"sentences": sentences, "mentions": mentions}

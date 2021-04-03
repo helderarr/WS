@@ -1,3 +1,4 @@
+from RetrieverCache import RetrieverCache
 from blink.biencoder.data_process import process_mention_data
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from blink.biencoder.biencoder import BiEncoderRanker, load_biencoder
@@ -9,9 +10,79 @@ import numpy as np
 import json
 import blink.candidate_ranking.utils as utils
 from blink.indexer.faiss_indexer import DenseFlatIndexer, DenseHNSWFlatIndexer
+import hashlib
 
 
-def _annotate(ner_model, input_sentences):
+def get_key(data):
+
+    sha_1 = hashlib.sha1()
+
+    for passage in list(data["passage"]):  # Change this
+        sha_1.update(passage.encode('utf-8'))
+
+    return sha_1.hexdigest()
+
+
+class BlinkReader(RetrieverCache):
+
+    def __init__(self):
+        super(BlinkReader, self).__init__(filename="data/blink.pickle")
+
+        self.model_loaded = False
+        self.evaluator = None
+        self.biencoder = None
+        self.biencoder_params = None
+        self.candidate_encoding = None
+        self.faiss_indexer = None
+        self.top_k = 1
+        self.logger = utils.get_logger('output')
+
+    def get_entities(self, data):
+        if self.contains_key(get_key(data)):
+            return self.get_element(get_key(data))
+
+        entities = self.load_entities(data)
+        self.auto_save(get_key(data), entities)
+        return entities
+
+    def load_entities(self, data):
+        if not self.model_loaded:
+            self.load_model()
+            self.model_loaded = True
+
+        samples = annotate(self.ner_model, list(data["passage"]))
+
+        dataloader = process_biencoder_dataloader(
+            samples, self.biencoder.tokenizer, self.biencoder_params
+        )
+        labels, nns, scores = run_biencoder(
+            self.biencoder, dataloader, self.candidate_encoding, self.top_k, self.faiss_indexer
+        )
+
+        print(labels, nns, scores)
+
+        self.logger.info(nns)
+        self.logger.info(scores)
+
+        idx = 0
+        for entity_list, sample in zip(nns, samples):
+            e_id = entity_list[0]
+            print(entity_list)
+            print(sample["sent_idx"], idx, e_id)
+            idx += 1
+
+        return None
+
+    def load_model(self):
+
+        #self.biencoder, self.biencoder_params, self.candidate_encoding, self.faiss_indexer \
+         #   = load_models(logger=self.logger)
+
+        self.ner_model = NER.get_model()
+
+
+
+def annotate(ner_model, input_sentences):
     ner_output_data = ner_model.predict(input_sentences)
     sentences = ner_output_data["sentences"]
     mentions = ner_output_data["mentions"]
@@ -35,7 +106,9 @@ def _annotate(ner_model, input_sentences):
     return samples
 
 
-def _process_biencoder_dataloader(samples, tokenizer, biencoder_params):
+
+
+def process_biencoder_dataloader(samples, tokenizer, biencoder_params):
     _, tensor_data = process_mention_data(
         samples,
         tokenizer,
@@ -52,7 +125,8 @@ def _process_biencoder_dataloader(samples, tokenizer, biencoder_params):
     return dataloader
 
 
-def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer=None):
+
+def run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer=None):
     biencoder.model.eval()
     labels = []
     nns = []
@@ -78,9 +152,9 @@ def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer
     return labels, nns, all_scores
 
 
-def _load_candidates(
-        entity_catalogue, entity_encoding, faiss_index=None, index_path=None, logger=None
-):
+
+def load_candidates(entity_catalogue, entity_encoding, faiss_index=None,
+                    index_path=None, logger=None):
     # only load candidate encoding if not using faiss index
     if faiss_index is None:
         candidate_encoding = torch.load(entity_encoding)
@@ -157,7 +231,7 @@ def load_models(
         id2text,
         wikipedia_id2local_id,
         faiss_indexer,
-    ) = _load_candidates(
+    ) = load_candidates(
         entity_catalogue,
         entity_encoding,
         faiss_index=None,
@@ -166,30 +240,3 @@ def load_models(
     )
 
     return biencoder, biencoder_params, candidate_encoding, faiss_indexer
-
-
-top_k = 1
-
-logger = utils.get_logger('output')
-biencoder, biencoder_params, candidate_encoding, faiss_indexer = load_models(logger=logger)
-ner_model = NER.get_model()
-samples = _annotate(ner_model, ['What is throat cancer? Throat cancer is any cancer that forms in the throat. The throat, also called the pharynx, is a 5-inch-long tube that runs from your nose to your neck. The larynx (voice box) and pharynx are the two main places throat cancer forms. Throat cancer is a type of head and neck cancer, which includes cancer of the mouth, tonsils, nose, sinuses, salivary glands and neck lymph nodes.',"Juan Carlos is the king os Spain", "Cristiano Ronaldo has 5 Ballon D'Or"])
-print(samples)
-dataloader = _process_biencoder_dataloader(
-    samples, biencoder.tokenizer, biencoder_params
-)
-labels, nns, scores = _run_biencoder(
-    biencoder, dataloader, candidate_encoding, top_k, faiss_indexer
-)
-
-print(labels, nns, scores)
-
-logger.info(nns)
-logger.info(scores)
-
-idx = 0
-for entity_list, sample in zip(nns, samples):
-    e_id = entity_list[0]
-    print(entity_list)
-    print(sample["sent_idx"],idx,e_id)
-    idx += 1
