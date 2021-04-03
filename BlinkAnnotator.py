@@ -1,7 +1,6 @@
 from pandas import DataFrame
 
 from NerRetreiver import NerRetriever
-from PassageReader import PassageReader
 from interfaces import PipelineStep
 
 
