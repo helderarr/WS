@@ -14,6 +14,8 @@ class NerRetriever(RetrieverCache):
         params = {"text": key}
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
-        return response.json()['annotation']['surfaceForm']
-
-
+        try:
+            data = response.json()['annotation']['surfaceForm']
+            return data
+        except:
+            return []

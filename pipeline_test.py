@@ -13,13 +13,17 @@ pipeline_blink = Pipeline()
 pipeline_blink.add_step(DbPediaSpotlightAnnotator())
 pipeline_blink.add_step(BlinkEntityExtractor())
 
-for conv in range(31, 80):
-    for utt in range(1,9):
 
-        passages = passage_reader.get_utterance_passages(f"{conv}_{utt}")
+utterances = passage_reader.data["conversation_utterance_id"]
+utterances = utterances.drop_duplicates()
 
-        out1 = pipeline_dbpedia.run(passages)
-        print(out1)
 
-        out2 = pipeline_blink.run(passages)
-        print(out2)
+for utt in list(utterances[1:-1]):
+
+    passages = passage_reader.get_utterance_passages(utt)
+
+    out1 = pipeline_dbpedia.run(passages)
+    print(out1)
+
+    out2 = pipeline_blink.run(passages)
+    print(out2)

@@ -34,6 +34,8 @@ class PassageReader:
 
             top_10_df["passage"] = top_10_df.apply(lambda row: retriever.get(row["passage_id"]), axis=1)
 
+            top_10_df = top_10_df[top_10_df["passage"].notnull()]
+
             top_10_df["conversation_id"] = top_10_df.apply(lambda row: row["conversation_utterance_id"].split("_")[0],
                                                            axis=1)
 
