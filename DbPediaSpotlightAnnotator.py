@@ -4,10 +4,10 @@ from NerRetreiver import NerRetriever
 from interfaces import PipelineStep
 
 
-class BlinkAnnotator(PipelineStep):
+class DbPediaSpotlightAnnotator(PipelineStep):
 
     def __init__(self):
-        super(BlinkAnnotator, self).__init__()
+        super(DbPediaSpotlightAnnotator, self).__init__()
 
     def run(self, data: DataFrame) -> DataFrame:
         with NerRetriever() as ner:

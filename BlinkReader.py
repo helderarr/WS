@@ -11,7 +11,7 @@ class BlinkReader(RetrieverCache):
         super(BlinkReader, self).__init__(filename="data/blink.pickle")
 
         self.models = None
-
+        self.args = None
         self.models_path = "/home/azureuser/test/BLINK/models/"  # the path where you stored the BLINK models
 
         self.config = {
@@ -32,10 +32,10 @@ class BlinkReader(RetrieverCache):
     def extract_element_from_source(self, key):
         # lazy load
         if self.models is None:
-            args = argparse.Namespace(**self.config)
-            self.models = main_dense.load_models(args, logger=None)
+            self.args = argparse.Namespace(**self.config)
+            self.models = main_dense.load_models(self.args, logger=None)
 
-        data = self.my_run(args, None, *self.models, test_data=key)
+        data = self.my_run(self.args, None, *self.models, test_data=key)
 
         return list(data)
 
