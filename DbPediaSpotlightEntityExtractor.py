@@ -15,6 +15,7 @@ class DbPediaSpotlightEntityExtractor(PipelineStep):
         return data
 
     def extract_single_sentence(self,text: str):
-        print(text)
         entity = self.extractor.get(text)
+        if entity is None:
+            return []
         return entity

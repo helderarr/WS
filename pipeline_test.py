@@ -1,6 +1,7 @@
 from DbPediaSpotlightAnnotator import DbPediaSpotlightAnnotator
 from BlinkEntityExtractor import BlinkEntityExtractor
 from DbPediaSpotlightEntityExtractor import DbPediaSpotlightEntityExtractor
+from PageRankPassageRanker import PageRankPassageRanker
 from PassageReader import PassageReader
 from interfaces import Pipeline
 
@@ -8,10 +9,12 @@ passage_reader = PassageReader()
 
 pipeline_dbpedia = Pipeline()
 pipeline_dbpedia.add_step(DbPediaSpotlightEntityExtractor())
+pipeline_dbpedia.add_step(PageRankPassageRanker())
 
 pipeline_blink = Pipeline()
 pipeline_blink.add_step(DbPediaSpotlightAnnotator())
 pipeline_blink.add_step(BlinkEntityExtractor())
+pipeline_blink.add_step(PageRankPassageRanker())
 
 
 utterances = passage_reader.data["conversation_utterance_id"]
