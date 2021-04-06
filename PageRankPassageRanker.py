@@ -1,4 +1,5 @@
 from pandas import DataFrame
+import pandas as pd
 import numpy as np
 from scipy import sparse
 from operator import itemgetter
@@ -17,7 +18,7 @@ class PageRankPassageRanker(PipelineStep):
         scores = self.centrality_scores(graph)
         importancy = self.importancy_heuristic_sum(entities, scores, order)
         ranked_data = self.ranked_data_builder(5, importancy, named_entity_data)
-        return ranked_data
+        return pd.DataFrame(ranked_data)
 
     def buildGraph(self, named_entity_data):
         num_respostas = len(named_entity_data)

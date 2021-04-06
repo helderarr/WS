@@ -2,6 +2,8 @@ from os import path
 from PassageRetriever import PassageRetriever
 import pandas as pd
 
+from UtteranceRetriever import UtteranceRetirever
+
 
 class PassageReader:
 
@@ -15,7 +17,7 @@ class PassageReader:
 
         return pd.read_csv(self.file_name,
                            names=["conversation_utterance_id", "conversation_id", "utterance_id",
-                                  "rank", "score", "passage"])
+                                  "utterance", "rank", "score", "passage"])
 
     def get_utterance_passages(self, conversation_utterance_id: str):
         return self.data[self.data["conversation_utterance_id"] == conversation_utterance_id]
@@ -42,6 +44,11 @@ class PassageReader:
             top_10_df["utterance_id"] = top_10_df.apply(lambda row: row["conversation_utterance_id"].split("_")[1],
                                                         axis=1)
 
+            utterances = UtteranceRetirever()
+
+            top_10_df["utterance"] = top_10_df \
+                .apply(lambda row: utterances.get_utterance(row["conversation_utterance_id"]), axis=1)
+
             top_10_df.to_csv(self.file_name, header=True, index=False,
-                             columns=["conversation_utterance_id", "conversation_id", "utterance_id", "rank", "score",
-                                      "passage"])
+                             columns=["conversation_utterance_id", "conversation_id", "utterance_id", "utterance",
+                                      "rank", "score", "passage"])
