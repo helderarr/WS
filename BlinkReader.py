@@ -39,9 +39,9 @@ class BlinkReader(RetrieverCache):
 
         return list(data)
 
-    def my_run(self,args,logger,biencoder,biencoder_params,crossencoder,crossencoder_params,
-               candidate_encoding,title2id,id2title,id2text,wikipedia_id2local_id,
-               faiss_indexer=None,test_data=None):
+    def my_run(self, args, logger, biencoder, biencoder_params, crossencoder, crossencoder_params,
+               candidate_encoding, title2id, id2title, id2text, wikipedia_id2local_id,
+               faiss_indexer=None, test_data=None):
 
         samples = test_data
 
@@ -71,4 +71,3 @@ class BlinkReader(RetrieverCache):
         except TypeError as error:
             print("error creating key")
             raise error
-

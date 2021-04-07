@@ -2,7 +2,6 @@ import abc
 import os
 import pickle
 from abc import ABC
-from contextlib import contextmanager
 
 
 class RetrieverCache(ABC):
@@ -17,7 +16,7 @@ class RetrieverCache(ABC):
             with open(self.filename, "rb") as pickle_off:
                 self.dic = pickle.load(pickle_off)
 
-    def get(self,key):
+    def get(self, key):
 
         computed_key = self.compute_key(key)
 
@@ -38,17 +37,17 @@ class RetrieverCache(ABC):
         if self.auto_save_counter > 0:
             with open(self.filename, "wb") as pickle_off:
                 pickle.dump(self.dic, pickle_off)
+            self.auto_save_counter = 0
 
     def _auto_save(self, key, value):
         self.dic[key] = value
 
         if self.auto_save_counter >= self.auto_save_level:
             self.dump()
-            self.auto_save_counter = 0
         else:
             self.auto_save_counter = self.auto_save_counter + 1
 
-    def compute_key(self,key):
+    def compute_key(self, key):
         return key
 
     @abc.abstractmethod

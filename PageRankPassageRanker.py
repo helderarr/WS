@@ -9,7 +9,6 @@ from interfaces import PipelineStep
 
 class PageRankPassageRanker(PipelineStep):
 
-
     def run(self, data: DataFrame) -> DataFrame:
         named_entity_data = []
         df = data[['passage', 'entities']]
@@ -31,17 +30,17 @@ class PageRankPassageRanker(PipelineStep):
             size = len(named_entity_data[i][2])
             entities.append(named_entity_data[i][2])
             for j in range(size):
-                if ((named_entity_data[i][2])[j] not in graph.keys()):
+                if (named_entity_data[i][2])[j] not in graph.keys():
                     order.append((named_entity_data[i][2])[j])
                     graph[(named_entity_data[i][2])[j]] = np.zeros(num_respostas)
                 (graph[(named_entity_data[i][2])[j]])[i] = 1
         graph = np.array([graph[i] for i in graph.keys()])
         graph = np.dot(graph, graph.T)
         final_graph = sparse.csr_matrix(graph)
-        print('final' , final_graph.shape[0])
+        print('final', final_graph.shape[0])
         return final_graph, order, entities
 
-    def centrality_scores(self,X, alpha=0.85, max_iter=100, tol=1e-10):
+    def centrality_scores(self, X, alpha=0.85, max_iter=100, tol=1e-10):
         """Power iteration computation of the principal eigenvector
         This method is also known as Google PageRank and the implementation
         is based on the one from the NetworkX project (BSD licensed too)
@@ -74,18 +73,17 @@ class PageRankPassageRanker(PipelineStep):
             return scores
         return scores
 
-    def importancy_heuristic_sum(self,entities, scores, order):
+    def importancy_heuristic_sum(self, entities, scores, order):
         importancy = np.zeros(len(entities))
         for i in range(len(entities)):
             for j in range(len(entities[i])):
                 importancy[i] += scores[order.index(entities[i][j])]
         return importancy
 
-    def ranked_data_builder(self,n, importancy, named_entity_data):
+    def ranked_data_builder(self, n, importancy, named_entity_data):
         aux = []
         for i in range(len(importancy)):
             # (1 , texto , score)
             aux.append((i + 1, named_entity_data[i][1], importancy[i]))
         aux.sort(key=itemgetter(2), reverse=True)
         return aux[:n]
-
