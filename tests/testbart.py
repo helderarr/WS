@@ -16,10 +16,8 @@ to_tokenize = ARTICLE_TO_SUMMARIZE
 #[{'summary_text': ' Barcelona beat Real Valladolid 1-0 thanks to a late winner from Ousmane Dembele . Oscar Plano was sent off for a dangerous foul on Dembeel . Barcelona move up to second, one point behind leaders Atletico Madrid .'}]
 
 # Initialize the HuggingFace summarization pipeline
-#summarizer = pipeline("summarization")
-
-summarizer = pipeline("summarization", model="t5-base", tokenizer="t5-base", framework="tf")
-summarized = summarizer(to_tokenize, min_length=50, max_length=120)
+summarizer = pipeline("summarization")
+summarized = summarizer(to_tokenize, min_length=100, max_length=180)
 
 # Print summarized text
 print(summarized)

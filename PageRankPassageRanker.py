@@ -11,13 +11,15 @@ class PageRankPassageRanker(PipelineStep):
 
     def run(self, data: DataFrame) -> DataFrame:
         named_entity_data = []
-        df = data[['passage', 'entities']]
+        df = data[['passage', 'entities',"conversation_utterance_id", "utterance"]]
         named_entity_data = df.to_records(index=True)
         graph, order, entities = self.buildGraph(named_entity_data)
         scores = self.centrality_scores(graph)
         importancy = self.importancy_heuristic_sum(entities, scores, order)
-        ranked_data = self.ranked_data_builder(5, importancy, named_entity_data)
-        return pd.DataFrame(ranked_data)
+        ranked_data = self.ranked_data_builder(importancy, named_entity_data)
+        # create DataFrame using data
+        df = pd.DataFrame(ranked_data, columns=['Order', 'passage', 'page_rank',"conversation_utterance_id", "utterance"])
+        return df
 
     def buildGraph(self, named_entity_data):
         num_respostas = len(named_entity_data)
@@ -59,7 +61,7 @@ class PageRankPassageRanker(PipelineStep):
                                      1.0 / n, 0)).ravel()
         scores = np.full(n, 1. / n, dtype=np.float32)  # initial guess
         for i in range(max_iter):
-            print("power iteration #%d" % i)
+            #print("power iteration #%d" % i)
             prev_scores = scores
             scores = (alpha * (scores * X + np.dot(dangle, prev_scores))
                       + (1 - alpha) * prev_scores.sum() / n)
@@ -68,7 +70,7 @@ class PageRankPassageRanker(PipelineStep):
         if scores_max == 0.0:
             scores_max = 1.0
         err = np.abs(scores - prev_scores).max() / scores_max
-        print("error: %0.6f" % err)
+        #print("error: %0.6f" % err)
         if err < n * tol:
             return scores
         return scores
@@ -80,10 +82,10 @@ class PageRankPassageRanker(PipelineStep):
                 importancy[i] += scores[order.index(entities[i][j])]
         return importancy
 
-    def ranked_data_builder(self, n, importancy, named_entity_data):
+    def ranked_data_builder(self, importancy, named_entity_data):
         aux = []
         for i in range(len(importancy)):
             # (1 , texto , score)
-            aux.append((i + 1, named_entity_data[i][1], importancy[i]))
-        aux.sort(key=itemgetter(2), reverse=True)
-        return aux[:n]
+            aux.append((i + 1, named_entity_data[i][1], importancy[i],named_entity_data[i][3],named_entity_data[i][4]))
+        #aux.sort(key=itemgetter(2), reverse=True)
+        return aux

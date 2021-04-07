@@ -12,6 +12,4 @@ class UtteranceRetirever:
         return self.data[conversation_utterance_id][0]
 
 
-u = UtteranceRetirever()
-print(u.get_utterance("31_1"))
-print(u.get_utterance("70_2"))
+
