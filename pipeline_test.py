@@ -7,6 +7,7 @@ from SumarizerStep import SumarizerStep
 from TopNPassages import TopNPassages
 from interfaces import Pipeline
 
+
 passage_reader = PassageReader()
 
 pipeline_dbpedia = Pipeline()

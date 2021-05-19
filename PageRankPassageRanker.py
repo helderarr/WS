@@ -9,16 +9,36 @@ from interfaces import PipelineStep
 
 class PageRankPassageRanker(PipelineStep):
 
-    def run(self, data: DataFrame) -> DataFrame:
+    def run(self, data: DataFrame , heuristic) -> DataFrame:
         named_entity_data = []
         df = data[['passage', 'entities',"conversation_utterance_id", "utterance"]]
         named_entity_data = df.to_records(index=True)
         graph, order, entities = self.buildGraph(named_entity_data)
         scores = self.centrality_scores(graph)
-        importancy = self.importancy_heuristic_sum(entities, scores, order)
-        ranked_data = self.ranked_data_builder(importancy, named_entity_data)
+        if heuristic == "sum":
+            importancy = self.importancy_heuristic_sum(entities, scores, order)
+        elif heuristic == "exp":
+            importancy = self.importancy_heuristic_exp(entities, scores, order)
+        elif heuristic == "nsum":
+            importancy = self.importancy_heuristic_nsum(entities, scores, order)
+        else:
+            importancy = self.importancy_heuristic_td_idf(entities, scores, order)
+
+        heuristics = {
+            "sum": self.importancy_heuristic_sum(entities, scores, order) ,
+            "exp" : self.importancy_heuristic_exp(entities, scores, order) ,
+            "nsum" : self.importancy_heuristic_nsum(entities, scores, order) ,
+            "td-idf" : self.importancy_heuristic_td_idf(entities, scores, order)
+        }
+
+        for importancy in heuristics:
+            aux = list(heuristics.values()).index(importancy)
+            ranked_data = self.ranked_data_builder(importancy, named_entity_data)
+            df [ aux ] =  pd.DataFrame(ranked_data,columns=['Order', 'passage', 'page_rank', "conversation_utterance_id", "utterance"])
+
+       # ranked_data = self.ranked_data_builder(importancy, named_entity_data)
         # create DataFrame using data
-        df = pd.DataFrame(ranked_data, columns=['Order', 'passage', 'page_rank',"conversation_utterance_id", "utterance"])
+        #df = pd.DataFrame(ranked_data, columns=['Order', 'passage', 'page_rank',"conversation_utterance_id", "utterance"])
         return df
 
     def buildGraph(self, named_entity_data):
@@ -81,6 +101,39 @@ class PageRankPassageRanker(PipelineStep):
             for j in range(len(entities[i])):
                 importancy[i] += scores[order.index(entities[i][j])]
         return importancy
+
+    def importancy_heuristic_exp(entities, scores, order):
+        importancy = np.zeros(len(entities))
+        for i in range(len(entities)):
+            for j in range(len(entities[i])):
+                importancy[i] += np.exp(scores[order.index(entities[i][j])])
+        return importancy
+
+    def importancy_heuristic_nsum(entities, scores, order):
+        importancy = np.zeros(len(entities))
+        for i in range(len(entities)):
+            for j in range(len(entities[i])):
+                importancy[i] += scores[order.index(entities[i][j])]
+            importancy[i] = importancy[i] / len(entities[i])
+        return importancy
+
+    def importancy_heuristic_td_idf(entities, scores, order):
+        importancy = np.zeros(len(entities))
+        graph = {}
+        for p in order:
+            aux = 0
+            for i in range(len(entities)):
+                for j in range(len(entities[i])):
+                    if (entities[i][j] == p):
+                        aux += 1
+            graph[p] = aux
+        for i in range(len(entities)):
+            for j in range(len(entities[i])):
+                importancy[i] += scores[order.index(entities[i][j])] / graph.get(entities[i][j])
+
+        return importancy
+
+
 
     def ranked_data_builder(self, importancy, named_entity_data):
         aux = []

@@ -288,7 +288,7 @@ class BertReranker:
 
         if parameters["dataparallel_bert"]:
             model.bert = torch.nn.DataParallel(model.bert)
-            print("Data parallel Bert")
+            print("data parallel Bert")
 
         return model
 
