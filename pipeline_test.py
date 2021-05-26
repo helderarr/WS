@@ -35,7 +35,7 @@ for utt in list(utterances[1:-1]):
     passages = passage_reader.get_utterance_passages(utt)
 
     out1 = pipeline_dbpedia.run(passages)
-    # print(out1)
+    print(out1)
 
     #out2 = pipeline_blink.run(passages)
     # print(out2)
