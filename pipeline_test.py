@@ -13,6 +13,7 @@ pd.set_option('mode.chained_assignment', None)
 
 passage_reader = PassageReader()
 
+
 pipeline_dbpedia = Pipeline()
 pipeline_dbpedia.add_step(DbPediaSpotlightEntityExtractor())
 pipeline_dbpedia.add_step(PageRankPassageRanker())

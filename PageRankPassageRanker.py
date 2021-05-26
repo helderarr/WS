@@ -9,8 +9,9 @@ from interfaces import PipelineStep
 
 class PageRankPassageRanker(PipelineStep):
 
-    def run(self, data: DataFrame , heuristic) -> DataFrame:
+    def run(self, data: DataFrame) -> DataFrame:
         named_entity_data = []
+        heuristic = ""
         df = data[['passage', 'entities',"conversation_utterance_id", "utterance"]]
         named_entity_data = df.to_records(index=True)
         graph, order, entities = self.buildGraph(named_entity_data)
@@ -31,14 +32,14 @@ class PageRankPassageRanker(PipelineStep):
             "td-idf" : self.importancy_heuristic_td_idf(entities, scores, order)
         }
 
-        for importancy in heuristics:
-            aux = list(heuristics.values()).index(importancy)
-            ranked_data = self.ranked_data_builder(importancy, named_entity_data)
-            df [ aux ] =  pd.DataFrame(ranked_data,columns=['Order', 'passage', 'page_rank', "conversation_utterance_id", "utterance"])
-
-       # ranked_data = self.ranked_data_builder(importancy, named_entity_data)
-        # create DataFrame using data
-        #df = pd.DataFrame(ranked_data, columns=['Order', 'passage', 'page_rank',"conversation_utterance_id", "utterance"])
+      #  for importancy in heuristics:
+       #     aux = list(heuristics.values()).index(importancy)
+        #    ranked_data = self.ranked_data_builder(importancy, named_entity_data)
+         #   df [ aux ] =  pd.DataFrame(ranked_data,columns=['Order', 'passage', 'page_rank', "conversation_utterance_id", "utterance"])
+        importancy = self.importancy_heuristic_sum(entities, scores, order)
+        ranked_data = self.ranked_data_builder(importancy, named_entity_data)
+        #create DataFrame using data
+        df = pd.DataFrame(ranked_data, columns=['Order', 'passage', 'page_rank',"conversation_utterance_id", "utterance"])
         return df
 
     def buildGraph(self, named_entity_data):
