@@ -1,5 +1,6 @@
 from RetrieverCache import RetrieverCache
 from transformers import pipeline
+import torch
 
 
 class SumarizerRetriever(RetrieverCache):
@@ -10,7 +11,8 @@ class SumarizerRetriever(RetrieverCache):
         self.max_length = max_length
 
     def extract_element_from_source(self, key):
-        summarizer = pipeline("summarization", device=0)
+        device = 0 if torch.cuda.is_available() else -1
+        summarizer = pipeline("summarization", device=device)
         summarized = summarizer(key, min_length=100, max_length=180)
         return summarized
 
