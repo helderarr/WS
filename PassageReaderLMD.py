@@ -32,7 +32,7 @@ class PassageReader:
 
             marco_df['rank'] = marco_df.groupby('conversation_utterance_id')['gobal_rank'].rank(method='first')
 
-            top_10_df = marco_df[marco_df["rank"] < 10]
+            top_10_df = marco_df[marco_df["rank"] <= 10]
 
             top_10_df["passage"] = top_10_df.apply(lambda row: retriever.get(row["passage_id"]), axis=1)
 
@@ -48,10 +48,6 @@ class PassageReader:
 
             top_10_df["utterance"] = top_10_df \
                 .apply(lambda row: utterances.get_utterance(row["conversation_utterance_id"]), axis=1)
-
-            top_10_df["passage"] = top_10_df["passage"].apply(lambda row: [x.strip() for x in row.split("\n") if len(x.strip())>0])
-
-            top_10_df = top_10_df.explode("passage")
 
             top_10_df.to_csv(self.file_name, header=True, index=False,
                              columns=["conversation_utterance_id", "conversation_id", "utterance_id", "utterance",

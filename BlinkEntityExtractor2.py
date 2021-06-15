@@ -1,6 +1,7 @@
 from pandas import DataFrame
 
 from BlinkReader import BlinkReader
+from BlinkReaderExtended import BlinkReaderExtended
 from interfaces import PipelineStep
 import itertools
 
@@ -16,18 +17,17 @@ def group_data(column, list):
     return out
 
 
-class BlinkEntityExtractor(PipelineStep):
+class BlinkEntityExtractor2(PipelineStep):
 
     def __init__(self):
-        super(BlinkEntityExtractor, self).__init__()
-        self.blink = BlinkReader()
+        super(BlinkEntityExtractor2, self).__init__()
+        self.blink = BlinkReaderExtended()
 
     def run(self, data: DataFrame) -> DataFrame:
         column = list(data["blink_entity_in"])
         query = list(itertools.chain.from_iterable(column))
         out = self.blink.get(query)
         self.blink.dump()
-        out = list(zip(out,[x["mention"] for x in query]))
         grouped_data = group_data(column, out)
         data["entities"] = grouped_data
         return data

@@ -18,6 +18,9 @@ class SumarizerStep(PipelineStep):
 
         self.sumarizer.dump()
 
+        if data.shape[0] <= 0:
+            return "","",""
+
         return data["conversation_utterance_id"].iloc[0], data["utterance"].iloc[0], summary[0]["summary_text"]
 
 

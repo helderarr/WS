@@ -5,10 +5,10 @@ from RetrieverCache import RetrieverCache
 from blink import main_dense
 
 
-class BlinkReader(RetrieverCache):
+class BlinkReaderExtended(RetrieverCache):
 
     def __init__(self):
-        super(BlinkReader, self).__init__(filename="data/blink.pickle")
+        super(BlinkReaderExtended, self).__init__(filename="data/BlinkReaderExtended.pickle")
 
         self.models = None
         self.args = None
@@ -18,7 +18,7 @@ class BlinkReader(RetrieverCache):
             "test_entities": None,
             "test_mentions": None,
             "interactive": False,
-            "top_k": 1,
+            "top_k": 3,
             "biencoder_model": self.models_path + "biencoder_wiki_large.bin",
             "biencoder_config": self.models_path + "biencoder_wiki_large.json",
             "entity_catalogue": self.models_path + "entity.jsonl",
@@ -37,7 +37,7 @@ class BlinkReader(RetrieverCache):
 
         data = self.my_run(self.args, None, *self.models, test_data=key)
 
-        return list(data)
+        return data
 
     def my_run(self, args, logger, biencoder, biencoder_params, crossencoder, crossencoder_params,
                candidate_encoding, title2id, id2title, id2text, wikipedia_id2local_id,
@@ -54,7 +54,16 @@ class BlinkReader(RetrieverCache):
             biencoder, dataloader, candidate_encoding, top_k, faiss_indexer
         )
 
-        return np.concatenate(nns, axis=None)
+        data = []
+        for i in range(len(nns)):
+            ent = nns[i]
+            sco = scores[i]
+            titles = [id2title[idx] for idx in ent]
+            textes = [id2text[idx] for idx in ent]
+
+            data.append((ent,sco,titles,textes))
+
+        return data
 
     def compute_key(self, key):
         try:

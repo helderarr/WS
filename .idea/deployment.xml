@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="azureuser@52.150.16.51:22" createEmptyFolders="true" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="azureuser@52.163.221.61:22" createEmptyFolders="true" remoteFilesAllowedToDisappearOnAutoupload="false" showEqualInSync="true" showExcludedInSync="true">
     <serverData>
       <paths name="azureuser@52.150.16.51:22">
         <serverdata>
@@ -13,6 +13,13 @@
         <serverdata>
           <mappings>
             <mapping deploy="/home/azureuser/tmp/pycharm_project_984" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="azureuser@52.163.221.61:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/azureuser/projects/pycharm_project_292" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>

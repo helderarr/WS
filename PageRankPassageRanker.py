@@ -16,9 +16,26 @@ class PageRankPassageRanker(PipelineStep):
         graph, order, entities = self.buildGraph(named_entity_data)
         scores = self.centrality_scores(graph)
         importancy = self.importancy_heuristic_sum(entities, scores, order)
+
+        sore_dic = dict([(entity[0],) + (score, ) for entity, score in zip(order, scores)])
+
         ranked_data = self.ranked_data_builder(importancy, named_entity_data)
+
+        ent_lists = []
+        for i in range(len(ranked_data)):
+            lst = ranked_data[i][5]
+            new_lst = []
+            for entity_in_passage in lst:
+                score = sore_dic[entity_in_passage[0]]
+                new_lst.append((entity_in_passage[0],entity_in_passage[1],score))
+
+            ent_lists.append(new_lst)
+
+        ranked_data = [(x[:5]) + (y,) for x,y in zip(ranked_data,ent_lists)]
+
+
         # create DataFrame using data
-        df = pd.DataFrame(ranked_data, columns=['Order', 'passage', 'page_rank',"conversation_utterance_id", "utterance"])
+        df = pd.DataFrame(ranked_data, columns=['Order', 'passage', 'page_rank',"conversation_utterance_id", "utterance","entities"])
         return df
 
     def buildGraph(self, named_entity_data):
@@ -39,7 +56,7 @@ class PageRankPassageRanker(PipelineStep):
         graph = np.array([graph[i] for i in graph.keys()])
         graph = np.dot(graph, graph.T)
         final_graph = sparse.csr_matrix(graph)
-        print('final', final_graph.shape[0])
+        #print('final', final_graph.shape[0])
         return final_graph, order, entities
 
     def centrality_scores(self, X, alpha=0.85, max_iter=100, tol=1e-10):
@@ -54,7 +71,7 @@ class PageRankPassageRanker(PipelineStep):
         n = X.shape[0]
         X = X.copy()
         incoming_counts = np.asarray(X.sum(axis=1)).ravel()
-        print("Normalizing the graph")
+        #print("Normalizing the graph")
         for i in incoming_counts.nonzero()[0]:
             X.data[X.indptr[i]:X.indptr[i + 1]] *= 1.0 / incoming_counts[i]
         dangle = np.asarray(np.where(np.isclose(X.sum(axis=1), 0),
@@ -86,6 +103,6 @@ class PageRankPassageRanker(PipelineStep):
         aux = []
         for i in range(len(importancy)):
             # (1 , texto , score)
-            aux.append((i + 1, named_entity_data[i][1], importancy[i],named_entity_data[i][3],named_entity_data[i][4]))
+            aux.append((i + 1, named_entity_data[i][1], importancy[i],named_entity_data[i][3],named_entity_data[i][4], named_entity_data[i][2]))
         #aux.sort(key=itemgetter(2), reverse=True)
         return aux

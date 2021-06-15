@@ -15,7 +15,7 @@ class DbPediaEntityRetriever(RetrieverCache):
             params = {"text": text}
             response = requests.get(url, headers=headers, params=params)
             response.raise_for_status()
-            ids = [x["@support"] for x in response.json()['Resources']]
+            ids = [(x["@support"] ,x["@surfaceForm"] ) for x in response.json()['Resources']]
             return ids
         except:
             print("Error:", text)
